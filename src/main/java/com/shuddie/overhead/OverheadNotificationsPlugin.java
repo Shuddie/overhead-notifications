@@ -1,7 +1,7 @@
 
-package com.example;
+package com.shuddie.overhead;
 /*
- * Copyright (c) 2022, Shuddie <http://github.com/Shuddie>
+ * Copyright (c) 2025, Shuddie <http://github.com/Shuddie>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

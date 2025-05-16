@@ -1,4 +1,4 @@
-package com.example;
+package com.shuddie.overhead;
 
 import net.runelite.client.config.*;
 import java.awt.*;

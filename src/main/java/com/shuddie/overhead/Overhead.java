@@ -23,7 +23,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.example;
+package com.shuddie.overhead;
 
 import net.runelite.api.Client;
 import net.runelite.api.Constants;
