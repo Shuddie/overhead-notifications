@@ -30,8 +30,10 @@ import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
+import net.runelite.api.Skill;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.GameTick;
+import net.runelite.api.events.StatChanged;
 import net.runelite.client.Notifier;
 import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.config.ConfigManager;
@@ -39,6 +41,7 @@ import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 
+import java.awt.*;
 import java.util.regex.Pattern;
 
 @Slf4j
@@ -143,6 +146,14 @@ public class OverheadNotificationsPlugin extends Plugin
         {
             triggerAlert("Stamina", config.staminaMessage(), config.staminaColor());
         }
+        else if (config.enableSoulflameHorn() && (msg.contains("encourages you with their Soulflame horn") || msg.contains("You encourage nearby allies")))
+        {
+            triggerAlert("Soulflamehorn", config.soulflameHornMessage(), config.soulflameHornColor(),6);
+        }
+        else if (config.enableSurgePotion() && msg.contains("capable of drinking another dose of surge potion"))
+        {
+            triggerAlert("Surge", config.surgePotionMessage(), config.surgePotionColor());
+        }
     }
     @Subscribe
     public void onGameTick(GameTick e)
@@ -157,8 +168,31 @@ public class OverheadNotificationsPlugin extends Plugin
                 break;
         }
     }
+    @Subscribe
+    public void onStatChanged(StatChanged event) {
+        if (!"Soulflamehorn".equals(lastTrigger)) {
+            return;
+        }
+
+        Skill skill = event.getSkill();
+
+        if (skill == Skill.ATTACK || skill == Skill.STRENGTH || skill == Skill.DEFENCE){
+            triggerAlert("Clear","", Color.BLACK,0);
+        }
+    }
+    private void triggerAlert(String triggerKey, String message, java.awt.Color color, int duration)
+    {
+        lastTrigger = triggerKey;
+        overhead.show(
+                message,
+                new String[] { triggerKey },
+                color,
+                duration
+        );
+    }
     private void triggerAlert(String triggerKey, String message, java.awt.Color color)
     {
+        lastTrigger = triggerKey;
         overhead.show(
                 message,
                 new String[] { triggerKey },

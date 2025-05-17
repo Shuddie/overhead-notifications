@@ -45,6 +45,11 @@ public class Overhead {
             return;
         }
 
+        if (message == null || message.trim().isEmpty()) {
+            localPlayer.setOverheadText(null);
+            localPlayer.setOverheadCycle(0);
+            return;
+        }
         StringBuilder sb = new StringBuilder();
         if (textColor != null) {
             sb.append("<col=")
