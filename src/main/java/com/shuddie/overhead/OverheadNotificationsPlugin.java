@@ -1,29 +1,5 @@
-
 package com.shuddie.overhead;
-/*
- * Copyright (c) 2025, Shuddie <http://github.com/Shuddie>
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+
 import com.google.inject.Provides;
 import javax.inject.Inject;
 
@@ -43,6 +19,7 @@ import net.runelite.client.plugins.PluginDescriptor;
 
 import java.awt.*;
 import java.util.regex.Pattern;
+import java.util.List;
 
 @Slf4j
 @PluginDescriptor(
@@ -52,6 +29,24 @@ import java.util.regex.Pattern;
 )
 public class OverheadNotificationsPlugin extends Plugin
 {
+    private static final String MSG_OVERLOAD_WORN_OFF = "overload have worn off";
+    private static final String MSG_SMELLING_SALT_WORN_OFF = "smelling salts has worn off";
+    private static final String MSG_DIVINE_POTION_WORN_OFF = "divine potion have worn off";
+    private static final String MSG_PRAYER_REGEN = "prayer regeneration";
+    private static final String MSG_PRAYER_ENHANCE_WORN_OFF = "prayer enhance effect has worn off";
+    private static final String MSG_THRALL_RETURNS = "thrall returns to the grave";
+    private static final String MSG_MARK_OF_DARKNESS_FADED = "Mark of Darkness has faded away";
+    private static final String MSG_SATURATED_HEART_WORN_OFF = "saturated heart have worn off";
+    private static final String MSG_STAMINA_EXPIRED = "stamina enhancement has expired";
+    private static final String MSG_SOULFLAMEHORN_1 = "encourages you with their Soulflame horn";
+    private static final String MSG_SOULFLAMEHORN_2 = "You encourage nearby allies";
+    private static final String MSG_SURGE_POTION_READY = "capable of drinking another dose of surge potion";
+    public static final Pattern DEATH_CHARGE_ACTIVE =
+            Pattern.compile("<col=[A-Fa-f\\d]+>Upon the death of your next foe, some of your special attack energy will be restored\\.</col>");
+
+    public static final Pattern UPGRADED_DEATH_CHARGE_ACTIVE =
+            Pattern.compile("<col=[A-Fa-f\\d]+>Upon the death of your next two foes, some of your special attack energy will be restored\\.</col>");
+
     @Inject
     private Client client;
 
@@ -69,17 +64,28 @@ public class OverheadNotificationsPlugin extends Plugin
 
     private String lastTrigger = null;
     private DeathChargeTimer timer = null;
-    public static final Pattern DEATH_CHARGE_ACTIVE =
-            Pattern.compile("<col=[A-Fa-f\\d]+>Upon the death of your next foe, some of your special attack energy will be restored\\.</col>");
-
-    public static final Pattern UPGRADED_DEATH_CHARGE_ACTIVE =
-            Pattern.compile("<col=[A-Fa-f\\d]+>Upon the death of your next two foes, some of your special attack energy will be restored\\.</col>");
+    private List<TriggerRule> triggerRules;
 
     @Override
     protected void startUp()
     {
         log.info("Overhead Notification Plugin started!");
         timer = new DeathChargeTimer();
+
+        triggerRules = List.of(
+                new TriggerRule("Overload", MSG_OVERLOAD_WORN_OFF, config::enableOverload, config::overloadMessage, config::overloadColor, 0),
+                new TriggerRule("Smelling Salt", MSG_SMELLING_SALT_WORN_OFF, config::enableSmellingSalt, config::smellingSaltMessage, config::smellingSaltColor, 0),
+                new TriggerRule("Divine Pot", MSG_DIVINE_POTION_WORN_OFF, config::enableDivinePot, config::divinePotMessage, config::divinePotColor, 0),
+                new TriggerRule("Prayer Regen", MSG_PRAYER_REGEN, config::enablePrayerRegen, config::prayerRegenMessage, config::prayerRegenColor, 0),
+                new TriggerRule("Prayer Enhance", MSG_PRAYER_ENHANCE_WORN_OFF, config::enablePrayerEnhance, config::prayerEnhanceMessage, config::prayerEnhanceColor, 0),
+                new TriggerRule("Thrall", MSG_THRALL_RETURNS, config::enableThrall, config::thrallMessage, config::thrallColor, 0),
+                new TriggerRule("Mark of Darkness", MSG_MARK_OF_DARKNESS_FADED, config::enableMarkOfDarkness, config::markOfDarknessMessage, config::markOfDarknessColor, 0),
+                new TriggerRule("Saturated Heart", MSG_SATURATED_HEART_WORN_OFF, config::enableSaturatedHeart, config::saturatedHeartMessage, config::saturatedHeartColor, 0),
+                new TriggerRule("Stamina", MSG_STAMINA_EXPIRED, config::enableStamina, config::staminaMessage, config::staminaColor, 0),
+                new TriggerRule("Soulflamehorn", MSG_SOULFLAMEHORN_1, config::enableSoulflameHorn, config::soulflameHornMessage, config::soulflameHornColor, 6),
+                new TriggerRule("Soulflamehorn", MSG_SOULFLAMEHORN_2, config::enableSoulflameHorn, config::soulflameHornMessage, config::soulflameHornColor, 6),
+                new TriggerRule("Surge", MSG_SURGE_POTION_READY, config::enableSurgePotion, config::surgePotionMessage, config::surgePotionColor, 0)
+        );
     }
 
     @Override
@@ -87,6 +93,7 @@ public class OverheadNotificationsPlugin extends Plugin
     {
         log.info("Overhead Notification Plugin stopped!");
         timer = null;
+        triggerRules.clear();
     }
 
     @Subscribe
@@ -102,65 +109,30 @@ public class OverheadNotificationsPlugin extends Plugin
         if (config.enableDeathCharge() && (msg.matches(DEATH_CHARGE_ACTIVE.pattern()) || msg.matches(UPGRADED_DEATH_CHARGE_ACTIVE.pattern())))
         {
             timer.start();
-        }
-        // ===== Overloads =====
-        if (config.enableOverload() && msg.contains("overload have worn off"))
-        {
-            triggerAlert("Overload", config.overloadMessage(), config.overloadColor());
-        }
-        else if (config.enableSmellingSalt() && msg.contains("smelling salts has worn off"))
-        {
-            triggerAlert("Smelling Salt", config.smellingSaltMessage(), config.smellingSaltColor());
+            return;
         }
 
-        // ===== Divines =====
-        else if (config.enableDivinePot() && msg.contains("divine potion have worn off"))
+        for (TriggerRule rule : triggerRules)
         {
-            triggerAlert("Divine Pot", config.divinePotMessage(), config.divinePotColor());
-        }
-
-        // ===== Prayer =====
-        else if (config.enablePrayerRegen() && msg.contains("prayer regeneration"))
-        {
-            triggerAlert("Prayer Regen", config.prayerRegenMessage(), config.prayerRegenColor());
-        }
-        else if (config.enablePrayerEnhance() && msg.contains("prayer enhance effect has worn off"))
-        {
-            triggerAlert("Prayer Enhance", config.prayerEnhanceMessage(), config.prayerEnhanceColor());
-        }
-
-        // ===== Other =====
-        else if (config.enableThrall() && msg.contains("thrall returns to the grave"))
-        {
-            triggerAlert("Thrall", config.thrallMessage(), config.thrallColor());
-        }
-        else if (config.enableMarkOfDarkness() && msg.contains("Mark of Darkness has faded away"))
-        {
-            triggerAlert("Mark of Darkness", config.markOfDarknessMessage(), config.markOfDarknessColor());
-        }
-        else if (config.enableSaturatedHeart() && msg.contains("saturated heart have worn off"))
-        {
-            triggerAlert("Saturated Heart", config.saturatedHeartMessage(), config.saturatedHeartColor());
-        }
-        else if (config.enableStamina() && msg.contains("stamina enhancement has expired"))
-        {
-            triggerAlert("Stamina", config.staminaMessage(), config.staminaColor());
-        }
-        else if (config.enableSoulflameHorn() && (msg.contains("encourages you with their Soulflame horn") || msg.contains("You encourage nearby allies")))
-        {
-            triggerAlert("Soulflamehorn", config.soulflameHornMessage(), config.soulflameHornColor(),6);
-        }
-        else if (config.enableSurgePotion() && msg.contains("capable of drinking another dose of surge potion"))
-        {
-            triggerAlert("Surge", config.surgePotionMessage(), config.surgePotionColor());
+            if (rule.isEnabled.getAsBoolean() && rule.matches(msg))
+            {
+                triggerAlert(
+                        rule.triggerKey,
+                        rule.messageSupplier.get(),
+                        rule.colorSupplier.get(),
+                        rule.durationOverride
+                );
+                return;
+            }
         }
     }
+
     @Subscribe
     public void onGameTick(GameTick e)
     {
         switch (this.timer.getState()) {
             case EXPIRED:
-                triggerAlert("Death Charge", config.deathchargeMessage(), config.deathchargeColor());
+                triggerAlert("Death Charge", config.deathchargeMessage(), config.deathchargeColor(), 0);
                 timer.stop();
                 break;
             case IDLE:
@@ -168,6 +140,7 @@ public class OverheadNotificationsPlugin extends Plugin
                 break;
         }
     }
+
     @Subscribe
     public void onStatChanged(StatChanged event) {
         if (!"Soulflamehorn".equals(lastTrigger)) {
@@ -180,6 +153,7 @@ public class OverheadNotificationsPlugin extends Plugin
             triggerAlert("Clear","", Color.BLACK,0);
         }
     }
+
     private void triggerAlert(String triggerKey, String message, java.awt.Color color, int duration)
     {
         lastTrigger = triggerKey;
@@ -187,17 +161,7 @@ public class OverheadNotificationsPlugin extends Plugin
                 message,
                 new String[] { triggerKey },
                 color,
-                duration
-        );
-    }
-    private void triggerAlert(String triggerKey, String message, java.awt.Color color)
-    {
-        lastTrigger = triggerKey;
-        overhead.show(
-                message,
-                new String[] { triggerKey },
-                color,
-                config.overheadDisplayTime()
+                duration > 0 ? duration : config.overheadDisplayTime()
         );
     }
 
