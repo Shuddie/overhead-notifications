@@ -36,7 +36,7 @@ public class OverheadNotificationsPlugin extends Plugin
     private static final String MSG_PRAYER_ENHANCE_WORN_OFF = "prayer enhance effect has worn off";
     private static final String MSG_THRALL_RETURNS = "thrall returns to the grave";
     private static final String MSG_MARK_OF_DARKNESS_FADED = "Mark of Darkness has faded away";
-    private static final String MSG_SATURATED_HEART_WORN_OFF = "saturated heart have worn off";
+    private static final String MSG_SATURATED_HEART_WORN_OFF = "saturated heart has regained its magical power";
     private static final String MSG_STAMINA_EXPIRED = "stamina enhancement has expired";
     private static final String MSG_SOULFLAMEHORN_1 = "encourages you with their Soulflame horn";
     private static final String MSG_SOULFLAMEHORN_2 = "You encourage nearby allies";
