@@ -36,8 +36,12 @@ public class OverheadNotificationsPlugin extends Plugin
     private static final String MSG_PRAYER_ENHANCE_WORN_OFF = "prayer enhance effect has worn off";
     private static final String MSG_THRALL_RETURNS = "thrall returns to the grave";
     private static final String MSG_MARK_OF_DARKNESS_FADED = "Mark of Darkness has faded away";
+    private static final String MSG_WARD_OF_ARCEUUS_EXPIRED = "Ward of Arceuus has expired";
     private static final String MSG_SATURATED_HEART_WORN_OFF = "saturated heart have worn off";
     private static final String MSG_STAMINA_EXPIRED = "stamina enhancement has expired";
+    private static final String MSG_VENOM_EXPIRED = "venom resistance has worn off";
+    private static final String MSG_ANTIPOISON_EXPIRED = "poison resistance has worn off";
+    private static final String MSG_ANTIFIRE_EXPIRED = "antifire potion has expired";
     private static final String MSG_SOULFLAMEHORN_1 = "encourages you with their Soulflame horn";
     private static final String MSG_SOULFLAMEHORN_2 = "You encourage nearby allies";
     private static final String MSG_SURGE_POTION_READY = "capable of drinking another dose of surge potion";
@@ -80,8 +84,12 @@ public class OverheadNotificationsPlugin extends Plugin
                 new TriggerRule("Prayer Enhance", MSG_PRAYER_ENHANCE_WORN_OFF, config::enablePrayerEnhance, config::prayerEnhanceMessage, config::prayerEnhanceColor, 0),
                 new TriggerRule("Thrall", MSG_THRALL_RETURNS, config::enableThrall, config::thrallMessage, config::thrallColor, 0),
                 new TriggerRule("Mark of Darkness", MSG_MARK_OF_DARKNESS_FADED, config::enableMarkOfDarkness, config::markOfDarknessMessage, config::markOfDarknessColor, 0),
+                new TriggerRule("Ward of Arceuus", MSG_WARD_OF_ARCEUUS_EXPIRED, config::enableWardOfArceuus, config::WardOfArceuusMessage, config::WardOfArceuusColor, 0),
                 new TriggerRule("Saturated Heart", MSG_SATURATED_HEART_WORN_OFF, config::enableSaturatedHeart, config::saturatedHeartMessage, config::saturatedHeartColor, 0),
                 new TriggerRule("Stamina", MSG_STAMINA_EXPIRED, config::enableStamina, config::staminaMessage, config::staminaColor, 0),
+                new TriggerRule("Venom", MSG_VENOM_EXPIRED, config::enableVenom, config::venomMessage, config::venomColor, 0),
+                new TriggerRule("AntiFire", MSG_ANTIFIRE_EXPIRED, config::enableAntifire, config::antifireMessage, config::antifireColor, 0),
+                new TriggerRule("AntiPoison", MSG_ANTIPOISON_EXPIRED, config::enableAntiPoison, config::antipoisonMessage, config::antipoisonColor, 0),
                 new TriggerRule("Soulflamehorn", MSG_SOULFLAMEHORN_1, config::enableSoulflameHorn, config::soulflameHornMessage, config::soulflameHornColor, 6),
                 new TriggerRule("Soulflamehorn", MSG_SOULFLAMEHORN_2, config::enableSoulflameHorn, config::soulflameHornMessage, config::soulflameHornColor, 6),
                 new TriggerRule("Surge", MSG_SURGE_POTION_READY, config::enableSurgePotion, config::surgePotionMessage, config::surgePotionColor, 0)
